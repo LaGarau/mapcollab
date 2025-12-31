@@ -49,32 +49,32 @@ export default function PlayerLocation({ mapRef, username = "GuestUser" }) {
         markerRef.current.setLngLat([longitude, latitude]);
       }, (err) => console.error(err), { enableHighAccuracy: true });
 
-      // // 3. Firebase Update Interval (Every 1 seconds)
-      // const firebaseInterval = setInterval(() => {
-      //   const { lat, lng } = currentPosRef.current;
-      //   if (lat === 0 && lng === 0) return; // Don't upload dummy data
+      // 3. Firebase Update Interval (Every 1 seconds)
+      const firebaseInterval = setInterval(() => {
+        const { lat, lng } = currentPosRef.current;
+        if (lat === 0 && lng === 0) return; // Don't upload dummy data
 
-      //   const playerNavRef = ref(db, `playernav/${username}`);
+        const playerNavRef = ref(db, `playernav/${username}`);
         
-      //   const now = new Date();
-      //   const readableTime = now.toLocaleString(); 
+        const now = new Date();
+        const readableTime = now.toLocaleString(); 
 
-      //   set(playerNavRef, {
-      //     username: username,
-      //     latitude: lat,
-      //     longitude: lng,
-      //     dateTime: readableTime,
+        set(playerNavRef, {
+          username: username,
+          latitude: lat,
+          longitude: lng,
+          dateTime: readableTime,
           
-      //   })
-      //   .then(() => console.log("Location synced to Firebase"))
-      //   .catch((error) => console.error("Firebase sync error:", error));
+        })
+        .then(() => console.log("Location synced to Firebase"))
+        .catch((error) => console.error("Firebase sync error:", error));
         
-      // }, 1000);
+      }, 1000);
 
-      // return () => {
-      //   navigator.geolocation.clearWatch(watchId);
-      //   clearInterval(firebaseInterval);
-      // };
+      return () => {
+        navigator.geolocation.clearWatch(watchId);
+        clearInterval(firebaseInterval);
+      };
     }
   }, [mapRef, username]);
 
