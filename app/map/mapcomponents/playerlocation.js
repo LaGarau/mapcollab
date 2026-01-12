@@ -6,16 +6,23 @@ import { db, auth } from "@/lib/firebase";
 import { ref, set } from "firebase/database";
 import { onAuthStateChanged } from "firebase/auth";
 
-export default function PlayerLocation({ mapRef, username = "GuestUser" }) {
+export default function PlayerLocation({ mapRef }) {
   const markerRef = useRef(null);
   const currentPosRef = useRef({ lat: 0, lng: 0 });
-  const emailRef = useRef("guest@unknown.com"); // ✅ persistent email
 
+  const userRef = useRef({
+    uid: null,
+    email: null,
+  });
+
+  // ✅ Listen to auth state
   useEffect(() => {
-    // 🔑 Listen for auth state
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user?.email) {
-        emailRef.current = user.email;
+      if (user) {
+        userRef.current = {
+          uid: user.uid,
+          email: user.email,
+        };
       }
     });
 
@@ -26,6 +33,7 @@ export default function PlayerLocation({ mapRef, username = "GuestUser" }) {
     const map = mapRef.current;
     if (!map) return;
 
+    // Marker
     const el = document.createElement("div");
     el.style.backgroundImage = 'url("/images/playerlocation.png")';
     el.style.width = "60px";
@@ -53,15 +61,17 @@ export default function PlayerLocation({ mapRef, username = "GuestUser" }) {
       markerRef.current.setLngLat([longitude, latitude]);
     });
 
+    // ✅ Firebase sync
     const interval = setInterval(() => {
+      const { uid, email } = userRef.current;
       const { lat, lng } = currentPosRef.current;
-      if (!lat || !lng) return;
 
-      const playerNavRef = ref(db, `playernav/${username}`);
+      if (!uid || !lat || !lng) return; // wait for auth + location
 
-      set(playerNavRef, {
-        username,
-        email: emailRef.current, // ✅ ALWAYS correct email
+      const playerRef = ref(db, `playernav/${uid}`);
+
+      set(playerRef, {
+        email,
         latitude: lat,
         longitude: lng,
         dateTime: new Date().toLocaleString(),
@@ -72,7 +82,7 @@ export default function PlayerLocation({ mapRef, username = "GuestUser" }) {
       navigator.geolocation.clearWatch(watchId);
       clearInterval(interval);
     };
-  }, [mapRef, username]);
+  }, [mapRef]);
 
   return null;
 }

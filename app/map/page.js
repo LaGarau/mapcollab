@@ -5,7 +5,7 @@ import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import dynamic from "next/dynamic";
 import RenderMarkers from './mapcomponents/markers';
-import Navbar from './mapcomponents/navbar';
+import Navbar from './mapcomponents/navbuttons';
 import NorthDirection from "./mapcomponents/direction/north";
 
 const MapContainer = dynamic(
@@ -16,7 +16,6 @@ const TileLayer = dynamic(
   () => import('react-leaflet').then((mod) => mod.TileLayer),
   { ssr: false }
 );
-
 
 
 
